@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(python --version; python -c \"import tkinter; print\\('Tkinter OK'\\)\")",
+      "PowerShell(Get-Process *)",
+      "PowerShell(Get-Command *)",
+      "PowerShell(git config *)",
+      "PowerShell(gh *)",
+      "PowerShell(Test-NetConnection *)",
+      "PowerShell(Resolve-DnsName *)"
+    ]
+  }
+}
