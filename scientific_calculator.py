@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.messagebox as tkmsg
 import math
 import re
 
@@ -27,6 +28,7 @@ class ScientificCalculator:
 
         self.setup_ui()
         self.setup_keyboard()
+        self.setup_menu()
         self._refresh_mode_button()
 
     # ----------------------------------------------------------------
@@ -201,6 +203,183 @@ class ScientificCalculator:
     def _copy_result(self):
         self.root.clipboard_clear()
         self.root.clipboard_append(self.result_text.get() or self.display_text.get())
+
+    # ----------------------------------------------------------------
+    #  菜单
+    # ----------------------------------------------------------------
+    def setup_menu(self):
+        menubar = tk.Menu(self.root, font=("Segoe UI", 9))
+
+        menu = tk.Menu(menubar, tearoff=0, font=("Segoe UI", 9))
+        menu.add_command(label="关于 (&A)", command=self.show_about)
+        menu.add_command(label="帮助 (&H)", command=self.show_help)
+        menubar.add_cascade(label="菜单 (&M)", menu=menu)
+
+        self.root.config(menu=menubar)
+
+    def show_about(self):
+        tkmsg.showinfo(
+            "关于 科学计算器",
+            "科学计算器  v1.0\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "基于 Python Tkinter 构建\n"
+            "支持四则运算、科学函数、\n"
+            "三角函数、对数、内存等功能\n\n"
+            "作者: jiangisaac\n"
+            "2025"
+        )
+
+    def show_help(self):
+        win = tk.Toplevel(self.root)
+        win.title("帮助 — 科学计算器使用说明")
+        win.geometry("520x500")
+        win.resizable(False, False)
+        win.transient(self.root)  # 置顶于主窗口
+        win.grab_set()
+        # 居中
+        sw = win.winfo_screenwidth()
+        sh = win.winfo_screenheight()
+        x = (sw - 520) // 2
+        y = (sh - 500) // 3
+        win.geometry(f"520x500+{x}+{y}")
+
+        # 可滚动文本
+        frame = tk.Frame(win)
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        text = tk.Text(frame, wrap=tk.WORD, font=("Microsoft YaHei UI", 10),
+                       padx=16, pady=12, spacing1=4)
+        scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=text.yview)
+        text.configure(yscrollcommand=scrollbar.set)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        content = """\
+科学计算器使用说明
+══════════════════════════════════════
+
+━━━━━━━━━━━━━
+一、基本运算
+━━━━━━━━━━━━━
+
+  • 数字输入：直接点击数字按钮（0-9）或使用键盘数字键
+  • 小数点：点击「.」按钮输入小数
+  • 四则运算：+（加）、-（减）、×（乘）、÷（除）
+  • 括号：( ) 用于改变运算优先级
+  • 正负号：点击「±」切换当前数值的正负
+  • 百分比：点击「%」将当前数值除以 100
+  • 清除：C 清除全部；⌫ 退格删除最后一位
+  • 等于：点击「=」或按 Enter 键计算结果
+
+  示例：输入 "2 + 3 × 4 = " 结果为 14（自动遵循先乘除后加减）
+
+━━━━━━━━━━━━━
+二、科学函数
+━━━━━━━━━━━━━
+
+  • x²   — 计算当前数值的平方
+  • x³   — 计算当前数值的立方
+  • √    — 计算当前数值的平方根（需非负数）
+  • xʸ   — 幂运算，输入 x 后点击 xʸ，再输入 y（键盘上显示为 ^）
+  • 1/x  — 计算当前数值的倒数
+  • x!   — 计算当前数值的阶乘（需为非负整数）
+  • 10ˣ  — 计算 10 的当前数值次方
+  • Exp  — 输入科学计数法底数 e（显示为 e^）
+  • π    — 输入圆周率 π（自动转换为 3.141592654）
+  • e    — 输入自然常数 e（自动转换为 2.718281828）
+
+  示例：计算 5³ → 输入 5，点击 x³，结果 125
+  示例：计算 3!  → 输入 3，点击 x!，结果 6
+
+━━━━━━━━━━━━━
+三、三角函数与对数
+━━━━━━━━━━━━━
+
+  • sin   — 计算正弦值
+  • cos   — 计算余弦值
+  • tan   — 计算正切值（90° 倍数处无定义）
+  • log   — 计算常用对数（以 10 为底）
+  • ln    — 计算自然对数（以 e 为底）
+
+  角度模式切换：
+  ────────────────────────
+  点击「DEG」按钮可在 DEG（度）和 RAD（弧度）之间切换。
+  顶部状态栏会显示当前模式。
+  • DEG 模式：三角函数按"度"计算
+    sin(30) = 0.5
+  • RAD 模式：三角函数按"弧度"计算
+    sin(π/6) ≈ 0.5
+
+  log 和 ln 的参数必须为正数。
+
+━━━━━━━━━━━━━
+四、内存功能
+━━━━━━━━━━━━━
+
+  • MC — 清除内存中存储的数值
+  • MR — 将内存中的数值调出到显示区
+  • M+ — 将当前显示值加到内存中
+  • M- — 从内存中减去当前显示值
+
+  当内存中有数值时，顶部状态栏右侧会显示「M」标记。
+
+  使用场景：计算中间结果需要暂存时使用。例如：
+  计算 (2+3)×(4+5)
+  ① 输入 2+3=，点击 M+（存储 5 到内存）
+  ② 输入 4+5=，点击 ×，再点击 MR，最后按 =
+  ③ 结果 45
+
+━━━━━━━━━━━━━
+五、键盘快捷键
+━━━━━━━━━━━━━
+
+  ┌──────────┬──────────────────────┐
+  │  按键     │  功能                │
+  ├──────────┼──────────────────────┤
+  │  0-9     │  输入数字            │
+  │  .       │  输入小数点          │
+  │  + - * / │  四则运算符          │
+  │  ( )     │  括号                │
+  │  Enter   │  计算结果（等于）    │
+  │  Escape  │  清除（C）           │
+  │  ⌫       │  退格删除            │
+  │  Delete  │  清除全部            │
+  │  Ctrl+C  │  复制结果显示        │
+  └──────────┴──────────────────────┘
+
+━━━━━━━━━━━━━
+六、隐式乘法
+━━━━━━━━━━━━━
+
+  计算器支持隐式乘法（自动识别），无需手动输入乘号：
+  • 2π     → 2 × π = 6.283185307
+  • 2e     → 2 × e = 5.436563657
+  • 3(4+5) → 3 × (4+5) = 27
+  • πe     → π × e ≈ 8.539734223
+
+  注意：科学计数法（如 1e5 = 100000）会被正确识别，不会与
+  上述隐式乘法混淆。
+
+━━━━━━━━━━━━━
+七、错误提示
+━━━━━━━━━━━━━
+
+  遇到错误时，结果显示区会显示错误原因：
+  • "除数不能为零"     — 尝试除以零
+  • "负数不能开平方"   — 对负数开平方根
+  • "阶乘需要非负整数" — 阶乘参数不是非负整数
+  • "ln 需要正数"      — 对数参数不是正数
+  • "数值溢出"         — 结果超出可表示范围
+  • "表达式错误"       — 输入的表达式格式有误
+
+  出现错误后点击「C」或按 Escape 键清除。"""
+
+        text.insert(tk.END, content)
+        text.configure(state=tk.DISABLED)  # 只读
+
+        close_btn = tk.Button(win, text="关闭", command=win.destroy,
+                              font=("Segoe UI", 9), padx=20)
+        close_btn.pack(pady=(0, 10))
 
     # ----------------------------------------------------------------
     #  输入
